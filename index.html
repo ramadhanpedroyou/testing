@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertanyaan Penting</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        .page {
+            display: none;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page 1 Style */
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: #1e293b;
+            color: #fff;
+            font-size: 1rem;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            background-color: #2563eb;
+        }
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Page 2 Style */
+        .question-container {
+            margin-top: -50px;
+        }
+        .question-text {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+        .choices-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        .choice-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .choice-label {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .btn-choice {
+            width: 100%;
+            padding: 14px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.1s;
+        }
+        .btn-choice:active {
+            transform: scale(0.95);
+        }
+        .btn-green {
+            background-color: #22c55e;
+        }
+        .btn-green:hover {
+            background-color: #16a34a;
+        }
+        .btn-red {
+            background-color: #ef4444;
+        }
+        .btn-red:hover {
+            background-color: #dc2626;
+        }
+
+        /* Page 3 Style (Video) */
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        video {
+            width: 100%;
+            display: block;
+            outline: none;
+        }
+        /* Overlay transparan untuk mengunci video agar tidak bisa di-pause/klik */
+        .video-lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        /* Page 4 Style */
+        .badge-choice {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .badge-red {
+            background-color: #ef4444;
+        }
+        .badge-green {
+            background-color: #22c55e;
+        }
+        .final-message {
+            font-size: 1.3rem;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: Pendataan -->
+    <div id="page1" class="page active">
+        <h2>Pendataan Pengunjung</h2>
+        <form id="dataForm" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+                <label for="nama">Nama / Email:</label>
+                <input type="text" id="nama" placeholder="Masukkan nama atau email kamu...">
+                <div id="errorNama" class="error-msg">Nama/Email wajib diisi!</div>
+            </div>
+            <div class="form-group">
+                <label for="pesanKamu">Kata-kata untuk Aku:</label>
+                <textarea id="pesanKamu" rows="4" placeholder="Tuliskan kata-kata kamu di sini..."></textarea>
+                <div id="errorPesan" class="error-msg">Kata-kata wajib diisi!</div>
+            </div>
+            <button type="submit" class="btn-submit">Silahkan Masuk</button>
+        </form>
+    </div>
+
+    <!-- PAGE 2: Pertanyaan -->
+    <div id="page2" class="page">
+        <div class="question-container">
+            <div class="question-text">Apakah kalian mempercayai Erer</div>
+            <div class="choices-container">
+                <!-- Kiri: Tidak (Merah) -->
+                <div class="choice-box">
+                    <div class="choice-label">Tidak</div>
+                    <button class="btn-choice btn-red" onclick="pilihJawaban('merah')">Tidak</button>
+                </div>
+                <!-- Kanan: Iya (Hijau) -->
+                <div class="choice-box">
+                    <div class="choice-label">Iya</div>
+                    <button class="btn-choice btn-green" onclick="pilihJawaban('hijau')">Iya</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: Pemutaran Video Terkunci -->
+    <div id="page3" class="page">
+        <div class="video-container" id="videoBox">
+            <!-- Overlay untuk mengunci video agar tidak bisa di-pause/klik -->
+            <div class="video-lock-overlay"></div>
+            
+            <video id="prankVideo" controlslist="nodownload nofullscreen noremoteplayback" disablepictureinpicture>
+                <!-- 
+                  Ubah file ini untuk video default awal jika diperlukan 
+                  (Nanti otomatis diganti oleh script JavaScript saat tombol dipilih)
+                -->
+                <source id="videoSource" src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                Browser kamu tidak mendukung pemutar video.
+            </video>
+        </div>
+    </div>
+
+    <!-- PAGE 4: Halaman Akhir -->
+    <div id="page4" class="page">
+        <h2>Thanks sudah ngisi</h2>
+        <p>Pilihan yang kamu ambil:</p>
+        <div id="badgeResult"></div>
+        <div id="finalMessage" class="final-message"></div>
+        <button class="btn-submit" onclick="resetToHome()">Kembali ke Halaman Awal</button>
+    </div>
+
+    <script>
+        let pilihanPengguna = '';
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Handling Submit Form Pendataan (Page 1)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const nama = document.getElementById('nama').value.trim();
+            const pesan = document.getElementById('pesanKamu').value.trim();
+            
+            let isValid = true;
+
+            if (nama === '') {
+                document.getElementById('errorNama').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('errorNama').style.display = 'none';
+            }
+
+            if (pesan === '') {
+                document.getElementById('errorPesan').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('errorPesan').style.display = 'none';
+            }
+
+            if (isValid) {
+                
+                // Masukkan link formspree.io di bawah ini jika ingin data masuk via Formspree:
+                /*
+                fetch("masukkan link formspree.io", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nama: nama, pesan: pesan })
+                });
+                */
+
+                // Atau gunakan Telegram Bot Token & Chat ID di bawah ini:
+                /*
+                const token = "masukkan token telegram bot disini";
+                const chatId = "masukkan chat id telegram disini";
+                const pesanKeTelegram = `Data Masuk!\nNama: ${nama}\nPesan: ${pesan}`;
+                
+                fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chatId, text: pesanKeTelegram })
+                });
+                */
+
+                showPage('page2');
+            }
+        }
+
+        // Handling Pilihan Tombol pada Page 2
+        function pilihJawaban(pilihan) {
+            pilihanPengguna = pilihan;
+            const videoElement = document.getElementById('prankVideo');
+            
+            if (pilihan === 'merah') {
+                // Ini file video merah (Ubah 'video_merah.mp4' dengan nama file video merah kamu di folder VS Code atau link online)
+                videoElement.src = "Video merah.mp4"; 
+            } else {
+                // Ini file video hijau (Ubah 'video_hijau.mp4' dengan nama file video hijau kamu di folder VS Code atau link online)
+                videoElement.src = "Video Hijau.mp4";   
+            }
+
+            showPage('page3');
+            
+            videoElement.currentTime = 0;
+            videoElement.play().catch(e => {
+                console.log("Autoplay dicegah browser, butuh interaksi pengguna.");
+            });
+        }
+
+        // Pengunci Video (Tidak bisa di-pause atau di-seek)
+        const videoElement = document.getElementById('prankVideo');
+        
+        videoElement.addEventListener('pause', () => {
+            if (document.getElementById('page3').classList.contains('active')) {
+                videoElement.play();
+            }
+        });
+
+        videoElement.addEventListener('seeking', (e) => {
+            e.preventDefault();
+        });
+
+        videoElement.addEventListener('ended', () => {
+            setupPage4();
+            showPage('page4');
+        });
+
+        function setupPage4() {
+            const badgeResult = document.getElementById('badgeResult');
+            const finalMessage = document.getElementById('finalMessage');
+
+            if (pilihanPengguna === 'merah') {
+                badgeResult.innerHTML = '<span class="badge-choice badge-red">Anda memilih tombol merah</span>';
+                finalMessage.innerText = 'Yowes Karepmu la';
+            } else {
+                badgeResult.innerHTML = '<span class="badge-choice badge-green">Anda memilih tombol hijau</span>';
+                finalMessage.innerText = 'thenks chuy';
+            }
+        }
+
+        function resetToHome() {
+            document.getElementById('dataForm').reset();
+            showPage('page1');
+        }
+    </script>
+</body>
+</html>
